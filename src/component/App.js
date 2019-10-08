@@ -12,11 +12,10 @@ const initOpt = {
   x : 0,
   y : 0,
   width: 50,
-  height:50,
+  height: 50,
 }
 
 const addArrayMaker = (arr) => {
-    console.log(arr)
     const list = arr.reduce((prev,cv,ci)=>{
       let add = Array.from(Array(4)).map((item,index) => {
         return { 
@@ -46,17 +45,22 @@ const App = () => {
     list : [],
   }
   
-  const [ rotate , setRotate ] = useState(initialRotate)
+  const [ rotate , setRotate ] = useState(null)
+  
     useEffect(()=>{
+      let isInit = true
+      const init = () => {
+        
+        isInit&&setRotate(c=>({
+          state : RESET,
+          list : [{ box : new BoxJs(initOpt) } ]
+        }))
+      }
       init()
+      return () => isInit = false
     },[])
   
-  const init = () => {
-    setRotate(c=>({
-      ...c,
-      list : [{ box : new BoxJs(initOpt) } ]
-    }))
-  }
+  
 
   const onStartHanler = () => {
     setRotate(c => ({
@@ -74,22 +78,23 @@ const App = () => {
 
 
   const onAddHanler = async () => {
-    await setRotate(c => ({
-      ...c,
-      state : PAUSE
-    }))
+    // await setRotate(c => ({
+    //   ...c,
+    //   state : PAUSE
+    // }))
     await setRotate(c =>{
        const list = addArrayMaker(c.list.slice())
        console.log(list)
       return {
         ...c,
+        state : START,
         list : [...list ]
       }
     })
-    await setRotate(c =>({
-      ...c,
-      state : START
-    }))
+    // await setRotate(c =>({
+    //   ...c,
+    //   state : START
+    // }))
 
   }
 
@@ -102,14 +107,16 @@ const App = () => {
 
   }
 
+  const memo = React.useMemo(()=> {
+      return rotate&&rotate.list.map((item,index)=>{
+        return <Box key={index} state={rotate.state} box={item.box}/>
+        }) 
+  },[rotate])
  
   return (
     <>
       <div className="App">
-        {rotate.list&&rotate.list.map((item,index)=>{
-          return <Box key={index} state={rotate.state} box={item.box}/>
-          })
-        }
+        {memo}
       </div>
       <button type='button' onClick={onStartHanler}>시작</button>
       <button type='button' onClick={onPauseHanler} style={{backgroundColor:'red',marginLeft:10}}>멈춤</button>
